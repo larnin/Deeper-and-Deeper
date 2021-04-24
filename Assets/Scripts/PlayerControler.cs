@@ -19,6 +19,8 @@ public class PlayerControler : MonoBehaviour
     [SerializeField] LayerMask m_groundLayer;
     [SerializeField] float m_jumpPower = 5;
 
+    SubscriberList m_subscriberList = new SubscriberList();
+
     Rigidbody m_rigidbody = null;
     Camera m_camera = null;
     CapsuleCollider m_collider = null;
@@ -36,8 +38,16 @@ public class PlayerControler : MonoBehaviour
         if (m_collider == null)
             m_collider = GetComponentInChildren<CapsuleCollider>();
         m_camera = GetComponentInChildren<Camera>();
+
+        m_subscriberList.Add(new Event<GetCameraEvent>.Subscriber(GetCamera));
+        m_subscriberList.Subscribe();
     }
-    
+
+    private void OnDestroy()
+    {
+        m_subscriberList.Unsubscribe();
+    }
+
     void Update()
     {
         ProcessRotation();
@@ -178,5 +188,10 @@ public class PlayerControler : MonoBehaviour
         if (m_grounded)
             return m_groundAcceleration;
         return m_airAcceleration;
+    }
+
+    void GetCamera(GetCameraEvent e)
+    {
+        e.camera = m_camera;
     }
 }
